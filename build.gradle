@@ -1,0 +1,26 @@
+group 'com.selonj'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.5
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    testCompile('junit:junit:4.+') {
+        exclude group: 'org.hamcrest'
+    }
+
+}
+
+apply plugin: 'idea'
+idea {
+    module {
+        excludeDirs = [file('.idea'), file('.gradle'), file('gradle')]
+        downloadSources=false
+    }
+}
