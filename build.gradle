@@ -9,7 +9,11 @@ repositories {
     mavenCentral()
     mavenLocal()
 }
-
+sourceSets{
+    test.java{
+        srcDirs+=['src/test/acceptance-test']
+    }
+}
 dependencies {
     testCompile('junit:junit:4.+') {
         exclude group: 'org.hamcrest'
