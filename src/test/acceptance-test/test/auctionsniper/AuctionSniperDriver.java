@@ -6,7 +6,7 @@ import com.objogate.wl.swing.driver.JLabelDriver;
 import com.objogate.wl.swing.gesture.GesturePerformer;
 
 import static auctionsniper.ui.MainWindow.APPLICATION_WINDOW_NAME;
-import static auctionsniper.Main.SNIPER_STATUS_LABEL_NAME;
+import static auctionsniper.ui.MainWindow.SNIPER_STATUS_LABEL_NAME;
 import static org.hamcrest.Matchers.equalTo;
 
 /**

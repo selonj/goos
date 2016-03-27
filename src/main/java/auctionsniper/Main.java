@@ -10,9 +10,6 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class Main {
 
-    public static final String SNIPER_STATUS_LABEL_NAME = "Auction Sniper Status";
-    public static final String STATUS_JOINING = "JOINING";
-    public static final String STATUS_LOST = "LOST";
     public static final String AUCTION_RESOURCE = "Auction";
     private MainWindow ui;
 

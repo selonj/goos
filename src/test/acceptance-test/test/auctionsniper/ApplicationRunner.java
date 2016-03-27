@@ -2,8 +2,8 @@ package test.auctionsniper;
 
 import auctionsniper.Main;
 
-import static auctionsniper.Main.STATUS_JOINING;
-import static auctionsniper.Main.STATUS_LOST;
+import static auctionsniper.ui.MainWindow.STATUS_JOINING;
+import static auctionsniper.ui.MainWindow.STATUS_LOST;
 import static test.auctionsniper.FakeAuctionServer.XMPP_HOSTNAME;
 
 /**
