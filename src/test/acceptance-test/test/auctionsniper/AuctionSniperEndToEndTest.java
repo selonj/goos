@@ -7,7 +7,7 @@ import org.junit.Test;
  * Created by L.x on 16-3-24.
  */
 public class AuctionSniperEndToEndTest {
-    private FakeAuctionServer auction = new FakeAuctionServer();
+    private FakeAuctionServer auction = new FakeAuctionServer("item-54321");
     private ApplicationRunner application = new ApplicationRunner();
 
     @After

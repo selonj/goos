@@ -9,22 +9,25 @@ repositories {
     mavenCentral()
     mavenLocal()
 }
-sourceSets{
-    test.java{
-        srcDirs+=['src/test/acceptance-test']
+sourceSets {
+    test.java {
+        srcDirs += ['src/test/acceptance-test']
     }
 }
 dependencies {
+    compile 'jivesoftware:smackx:3.1.0'
+
     testCompile('junit:junit:4.+') {
         exclude group: 'org.hamcrest'
     }
-
+    testCompile 'org.hamcrest:hamcrest-library:1.3'
+    testCompile 'com.googlecode.windowlicker:windowlicker-swing:r268'
 }
 
 apply plugin: 'idea'
 idea {
     module {
         excludeDirs = [file('.idea'), file('.gradle'), file('gradle')]
-        downloadSources=false
+        downloadSources = false
     }
 }
