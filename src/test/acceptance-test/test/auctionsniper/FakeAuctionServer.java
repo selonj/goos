@@ -1,5 +1,6 @@
 package test.auctionsniper;
 
+import auctionsniper.Main;
 import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.packet.Message;
 
@@ -17,7 +18,6 @@ import static org.junit.Assert.assertThat;
  */
 public class FakeAuctionServer {
     public static final String XMPP_HOSTNAME = "localhost";
-    private static final String ITEM_ID_AS_LOGIN = "auction-%s";
     private static final String AUCTION_PASSWORD = "auction";
 
     public final String itemId;
@@ -32,7 +32,7 @@ public class FakeAuctionServer {
 
     public void startSellingItem() throws XMPPException {
         connection.connect();
-        connection.login(String.format(ITEM_ID_AS_LOGIN, itemId), AUCTION_PASSWORD, AUCTION_RESOURCE);
+        connection.login(String.format(Main.ITEM_ID_AS_LOGIN, itemId), AUCTION_PASSWORD, AUCTION_RESOURCE);
         connection.getChatManager().addChatListener(new ChatManagerListener() {
             @Override
             public void chatCreated(Chat chat, boolean createLocally) {
