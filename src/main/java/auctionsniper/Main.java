@@ -10,6 +10,7 @@ import org.jivesoftware.smack.packet.Message;
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 
+import static auctionsniper.ui.MainWindow.STATUS_LOST;
 import static java.lang.String.format;
 
 /**
@@ -26,6 +27,7 @@ public class Main {
     private static final int ITEM_ID_ARG = 3;
 
     private MainWindow ui;
+    private Chat notToBeGCd;
 
     public Main() throws InvocationTargetException, InterruptedException {
         startUserInterface();
@@ -40,23 +42,33 @@ public class Main {
         });
     }
 
-    public static void main(String... args) throws Exception {
-        Main main = new Main();
-        XMPPConnection connection = connectTo(args[HOSTNAME_ARG], args[SNIPER_ID_ARG], args[PASSWORD_ARG]);
-        Chat chat = connection.getChatManager().createChat(auctionId(args[ITEM_ID_ARG], connection), new MessageListener() {
+    private void joinAuction(XMPPConnection connection, String itemId) throws XMPPException {
+        Chat chat = connection.getChatManager().createChat(auctionId(itemId, connection), new MessageListener() {
             @Override
             public void processMessage(Chat chat, Message message) {
-
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        ui.showStatus(STATUS_LOST);
+                    }
+                });
             }
         });
+
+        notToBeGCd=chat;
         chat.sendMessage(new Message());
+    }
+
+    public static void main(String... args) throws Exception {
+        Main main = new Main();
+        main.joinAuction(connection(args[HOSTNAME_ARG], args[SNIPER_ID_ARG], args[PASSWORD_ARG]), args[ITEM_ID_ARG]);
     }
 
     private static String auctionId(String itemId, XMPPConnection connection) {
         return format(AUCTION_ID_FORMAT, itemId, connection.getServiceName());
     }
 
-    private static XMPPConnection connectTo(String hostName, String sniperId, String password) throws XMPPException {
+    private static XMPPConnection connection(String hostName, String sniperId, String password) throws XMPPException {
         XMPPConnection connection = new XMPPConnection(hostName);
         connection.connect();
         connection.login(sniperId, password, AUCTION_RESOURCE);

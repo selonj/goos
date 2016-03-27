@@ -31,4 +31,8 @@ public class MainWindow extends JFrame {
         pack();
         setVisible(true);
     }
+
+    public void showStatus(String status) {
+        sniperStatus.setText(status);
+    }
 }
