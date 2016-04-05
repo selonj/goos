@@ -18,7 +18,7 @@ import static java.lang.String.format;
 /**
  * Created by L.x on 16-3-27.
  */
-public class Main {
+public class Main implements AuctionEventListener {
     public static final String ITEM_ID_AS_LOGIN = "auction-%s";
     public static final String AUCTION_RESOURCE = "Auction";
     private static final String AUCTION_ID_FORMAT = ITEM_ID_AS_LOGIN + "@%s/" + AUCTION_RESOURCE;
@@ -49,17 +49,7 @@ public class Main {
     private void joinAuction(XMPPConnection connection, String itemId) throws XMPPException {
         disconnectWhenUICloses(connection);
 
-        Chat chat = connection.getChatManager().createChat(auctionId(itemId, connection), new MessageListener() {
-            @Override
-            public void processMessage(Chat chat, Message message) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        ui.showStatus(STATUS_LOST);
-                    }
-                });
-            }
-        });
+        Chat chat = connection.getChatManager().createChat(auctionId(itemId, connection), new AuctionMessageTranslator(this));
 
         notToBeGCd = chat;
         chat.sendMessage(JOIN_COMMAND_FORMAT);
@@ -70,6 +60,16 @@ public class Main {
             @Override
             public void windowClosed(WindowEvent e) {
                 connection.disconnect();
+            }
+        });
+    }
+
+    @Override
+    public void auctionClosed() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ui.showStatus(STATUS_LOST);
             }
         });
     }
