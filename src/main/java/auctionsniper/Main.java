@@ -74,6 +74,11 @@ public class Main implements AuctionEventListener {
         });
     }
 
+    @Override
+    public void currentPrice(int price, int increment) {
+
+    }
+
     public static void main(String... args) throws Exception {
         Main main = new Main();
         main.joinAuction(connection(args[HOSTNAME_ARG], args[SNIPER_ID_ARG], args[PASSWORD_ARG]), args[ITEM_ID_ARG]);

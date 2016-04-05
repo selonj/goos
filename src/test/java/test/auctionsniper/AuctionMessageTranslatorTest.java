@@ -32,4 +32,16 @@ public class AuctionMessageTranslatorTest {
 
         translator.processMessage(UNUSED_CHAT, message);
     }
+
+    @Test
+    public void notifiesBidDetailsWhenPriceMessageReceived() throws Exception {
+        context.checking(new Expectations() {{
+            oneOf(listener).currentPrice(192, 7);
+        }});
+
+        Message message = new Message();
+        message.setBody("SOLVersion: 1.1; Event: PRICE; Price: 192; Increment: 7; Bidder: <other>;");
+
+        translator.processMessage(UNUSED_CHAT, message);
+    }
 }
