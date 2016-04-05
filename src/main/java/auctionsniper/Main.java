@@ -8,6 +8,8 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 
 import static auctionsniper.ui.MainWindow.STATUS_LOST;
@@ -25,6 +27,8 @@ public class Main {
     private static final int SNIPER_ID_ARG = 1;
     private static final int PASSWORD_ARG = 2;
     private static final int ITEM_ID_ARG = 3;
+    public static final String BID_COMMAND_FORMAT = "SOLVersion: 1.1; Command: BID; Bid: %d;";
+    public static final String JOIN_COMMAND_FORMAT = "SOLVersion: 1.1; Command: JOIN;";
 
     private MainWindow ui;
     private Chat notToBeGCd;
@@ -43,6 +47,8 @@ public class Main {
     }
 
     private void joinAuction(XMPPConnection connection, String itemId) throws XMPPException {
+        disconnectWhenUICloses(connection);
+
         Chat chat = connection.getChatManager().createChat(auctionId(itemId, connection), new MessageListener() {
             @Override
             public void processMessage(Chat chat, Message message) {
@@ -55,8 +61,17 @@ public class Main {
             }
         });
 
-        notToBeGCd=chat;
-        chat.sendMessage(new Message());
+        notToBeGCd = chat;
+        chat.sendMessage(JOIN_COMMAND_FORMAT);
+    }
+
+    private void disconnectWhenUICloses(final XMPPConnection connection) {
+        ui.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                connection.disconnect();
+            }
+        });
     }
 
     public static void main(String... args) throws Exception {
