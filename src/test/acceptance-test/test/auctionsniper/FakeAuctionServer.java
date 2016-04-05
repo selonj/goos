@@ -1,6 +1,7 @@
 package test.auctionsniper;
 
 import auctionsniper.Main;
+import org.hamcrest.Matcher;
 import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.packet.Message;
 
@@ -9,8 +10,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static auctionsniper.Main.AUCTION_RESOURCE;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static auctionsniper.Main.BID_COMMAND_FORMAT;
+import static auctionsniper.Main.JOIN_COMMAND_FORMAT;
+import static java.lang.String.format;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -19,6 +22,8 @@ import static org.junit.Assert.assertThat;
 public class FakeAuctionServer {
     public static final String XMPP_HOSTNAME = "localhost";
     private static final String AUCTION_PASSWORD = "auction";
+    private static final String PRICE_EVENT_FORMAT = "SOLVersion: 1.1; Event: PRICE; Price: %d; Increment: %d; Bidder: %s;";
+    private static final String CLOSE_EVENT_FORMAT = "SOLVersion: 1.1; Event: CLOSE;";
 
     public final String itemId;
     private Chat currentChat;
@@ -32,7 +37,7 @@ public class FakeAuctionServer {
 
     public void startSellingItem() throws XMPPException {
         connection.connect();
-        connection.login(String.format(Main.ITEM_ID_AS_LOGIN, itemId), AUCTION_PASSWORD, AUCTION_RESOURCE);
+        connection.login(format(Main.ITEM_ID_AS_LOGIN, itemId), AUCTION_PASSWORD, AUCTION_RESOURCE);
         connection.getChatManager().addChatListener(new ChatManagerListener() {
             @Override
             public void chatCreated(Chat chat, boolean createLocally) {
@@ -42,12 +47,25 @@ public class FakeAuctionServer {
         });
     }
 
-    public void hasJoiningRequestFromSniper() throws InterruptedException {
-        messageListener.receivesAMessage();
+    public void hasJoiningRequestFromSniper(String sniperId) throws InterruptedException {
+        receivesAMessageMatching(sniperId, equalTo(JOIN_COMMAND_FORMAT));
     }
 
     public void announceClosed() throws XMPPException {
-        currentChat.sendMessage(new Message());
+        currentChat.sendMessage(CLOSE_EVENT_FORMAT);
+    }
+
+    public void reportPrice(int price, int increment, String bidder) throws XMPPException {
+        currentChat.sendMessage(format(PRICE_EVENT_FORMAT, price, increment, bidder));
+    }
+
+    public void hasReceivedBid(int bid, String sniperId) throws InterruptedException {
+        receivesAMessageMatching(sniperId, equalTo(format(BID_COMMAND_FORMAT, bid)));
+    }
+
+    private void receivesAMessageMatching(String sniperId, Matcher<String> messageBodyMatcher) throws InterruptedException {
+        messageListener.receivesAMessage(messageBodyMatcher);
+        assertThat(currentChat.getParticipant(), equalTo(sniperId));
     }
 
     public void stop() {
@@ -62,9 +80,10 @@ public class FakeAuctionServer {
             messages.add(message);
         }
 
-        public void receivesAMessage() throws InterruptedException {
+        public void receivesAMessage(Matcher<? super String> messageBodyMatcher) throws InterruptedException {
             Message message = messages.poll(1, TimeUnit.SECONDS);
             assertThat(message, is(notNullValue()));
+            assertThat(message.getBody(), messageBodyMatcher);
         }
     }
 }

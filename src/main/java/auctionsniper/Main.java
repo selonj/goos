@@ -8,6 +8,8 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 
 import static auctionsniper.ui.MainWindow.STATUS_LOST;
@@ -16,7 +18,7 @@ import static java.lang.String.format;
 /**
  * Created by L.x on 16-3-27.
  */
-public class Main {
+public class Main implements AuctionEventListener {
     public static final String ITEM_ID_AS_LOGIN = "auction-%s";
     public static final String AUCTION_RESOURCE = "Auction";
     private static final String AUCTION_ID_FORMAT = ITEM_ID_AS_LOGIN + "@%s/" + AUCTION_RESOURCE;
@@ -25,6 +27,8 @@ public class Main {
     private static final int SNIPER_ID_ARG = 1;
     private static final int PASSWORD_ARG = 2;
     private static final int ITEM_ID_ARG = 3;
+    public static final String BID_COMMAND_FORMAT = "SOLVersion: 1.1; Command: BID; Bid: %d;";
+    public static final String JOIN_COMMAND_FORMAT = "SOLVersion: 1.1; Command: JOIN;";
 
     private MainWindow ui;
     private Chat notToBeGCd;
@@ -43,20 +47,36 @@ public class Main {
     }
 
     private void joinAuction(XMPPConnection connection, String itemId) throws XMPPException {
-        Chat chat = connection.getChatManager().createChat(auctionId(itemId, connection), new MessageListener() {
+        disconnectWhenUICloses(connection);
+
+        Chat chat = connection.getChatManager().createChat(auctionId(itemId, connection), new AuctionMessageTranslator(this));
+
+        notToBeGCd = chat;
+        chat.sendMessage(JOIN_COMMAND_FORMAT);
+    }
+
+    private void disconnectWhenUICloses(final XMPPConnection connection) {
+        ui.addWindowListener(new WindowAdapter() {
             @Override
-            public void processMessage(Chat chat, Message message) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        ui.showStatus(STATUS_LOST);
-                    }
-                });
+            public void windowClosed(WindowEvent e) {
+                connection.disconnect();
             }
         });
+    }
 
-        notToBeGCd=chat;
-        chat.sendMessage(new Message());
+    @Override
+    public void auctionClosed() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ui.showStatus(STATUS_LOST);
+            }
+        });
+    }
+
+    @Override
+    public void currentPrice(int price, int increment) {
+
     }
 
     public static void main(String... args) throws Exception {
